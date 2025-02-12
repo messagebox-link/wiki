@@ -97,7 +97,7 @@
     
     cd zlib-1.3.1
     
-    CC="/opt/musl/bin/x86_64-linux-musl-gcc" ./configure --prefix=/opt/musl --static
+    CC="/opt/musl/bin/x86_64-linux-musl-gcc" CFLAGS="-fPIC"  ./configure --prefix=/opt/musl/x86_64-linux-musl --static
     
     make -j$(nproc) && make install
     ````
@@ -109,11 +109,11 @@
     `libffi`（Foreign Function Interface）用于支持 `SnarkOS` 调用外部 C 函数。
 
     ```shell
-    git clone https://github.com/libffi/libffi.git
+     wget https://github.com/libffi/libffi/releases/download/v3.4.4/libffi-3.4.4.tar.gz
     
-    cd libffi
+    tar -xvzf libffi-3.4.4.tar.gz && cd libffi-3.4.4
     
-    ./configure --prefix=/opt/musl/bin/x86_64-linux-musl-gcc --disable-shared --enable-static 
+    CC="/opt/musl/bin/x86_64-linux-musl-gcc" ./configure --prefix=/opt/musl/x86_64-linux-musl --disable-shared --enable-static 
     
     make -j$(nproc) && make install 
     ```
@@ -169,13 +169,23 @@
     git clone https://github.com/Kitware/CMake.git
     
     cd CMake
+
+    export CC="/opt/musl/bin/x86_64-linux-musl-gcc"
+    export CXX="/opt/musl/bin/x86_64-linux-musl-g++"
+    export LD="/opt/musl/bin/x86_64-linux-musl-ld"
+    export AR="/opt/musl/bin/x86_64-linux-musl-ar"
+    export RANLIB="/opt/musl/bin/x86_64-linux-musl-ranlib"
+    export STRIP="/opt/musl/bin/x86_64-linux-musl-strip"
+    export LD_LIBRARY_PATH="/opt/musl/x86_64-linux-musl/lib"
     
-    ./bootstrap --prefix=/opt/musl/x86_64-linux-musl \ 
+    ./bootstrap --prefix=/opt/musl/x86_64-linux-musl \
     --parallel=$(nproc) \
     -- \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_COMPILER="/opt/musl/bin/x86_64-linux-musl-gcc" \
     -DCMAKE_CXX_COMPILER="/opt/musl/bin/x86_64-linux-musl-g++" \
+    -DCMAKE_INCLUDE_PATH="/opt/musl/x86_64-linux-musl/include" \
+    -DCMAKE_LIBRARY_PATH="/opt/musl/x86_64-linux-musl/lib" \
     -DCMAKE_EXE_LINKER_FLAGS="-static" \
     -DCMAKE_SHARED_LINKER_FLAGS="-static" \
     -DCMAKE_MODULE_LINKER_FLAGS="-static" \
@@ -189,7 +199,7 @@
 - 2.5 依赖编译完成
 
     ```shell
-    ls /opt/musl/lib
+    ls /opt/musl/x86_64-linux-musl/lib
     ```
     应该看到：
 
@@ -259,10 +269,10 @@
     export LIBCLANG_PATH="/root/llvm-project/build/lib"
 
     # 设定编译依赖路径
-    export PKG_CONFIG_PATH="/opt/musl/lib/pkgconfig:$PKG_CONFIG_PATH"
-    export C_INCLUDE_PATH="/opt/musl/include:$C_INCLUDE_PATH"
-    export LIBRARY_PATH="/opt/musl/lib:$LIBRARY_PATH"
-    export LD_LIBRARY_PATH="/root/llvm-project/build/lib:/opt/musl/lib"
+    export PKG_CONFIG_PATH="/opt/musl/x86_64-linux-musl/lib/pkgconfig:$PKG_CONFIG_PATH"
+    export C_INCLUDE_PATH="/opt/musl/x86_64-linux-musl/include:$C_INCLUDE_PATH"
+    export LIBRARY_PATH="/opt/musl/x86_64-linux-musl/lib:$LIBRARY_PATH"
+    export LD_LIBRARY_PATH="/root/llvm-project/build/lib:/opt/musl/x86_64-linux-musl/lib"
     ```
     确保所有工具、编译器和库路径都正确指向 `musl` 交叉编译环境。
 
@@ -371,3 +381,9 @@
 
 
 
+
+### 5. (可选)额外的依赖
+```shell
+apt update
+apt install build-essential musl-tools git automake autoconf bison flex texinfo gawk libgmp-dev libmpfr-dev libmpc-dev libisl-dev libgmp-dev libmpfr-dev libmpc-dev libisl-dev python3
+```
