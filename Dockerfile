@@ -55,7 +55,7 @@ RUN git clone https://github.com/richfelker/musl-cross-make.git && \
     make -j$(nproc) && \
     make install && \
     cd .. && \
-    rm -rf musl-cross-make
+    rm -rf musl-cross-make && rm -rf /opt/musl-toolchain
 
 # Install Rust with musl target
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
@@ -148,7 +148,7 @@ WORKDIR /root
 # Clone LLVM
 RUN  git clone https://github.com/llvm/llvm-project.git && \
     cd llvm-project && \
-    /opt/musl/x86_64-linux-musl/bin/cmake -S llvm -B build -G Ninja \
+    /opt/musl/x86_64-linux-musl/bin/cmake -S llvm -B llvm-build -G Ninja \
     -DLLVM_ENABLE_PROJECTS=clang \
     -DLIBCLANG_BUILD_STATIC=ON \
     -DCMAKE_BUILD_TYPE=Release \
@@ -157,8 +157,9 @@ RUN  git clone https://github.com/llvm/llvm-project.git && \
     -DLIBCXXABI_USE_LLVM_UNWINDER=ON \
     -DLIBCXX_HAS_MUSL_LIBC=ON \
     -DLLVM_TARGETS_TO_BUILD="X86" && \
-    ninja -C build && \
-    cd .. 
+    ninja -C llvm-build && \
+    cp -a llvm-build /opt/musl/ && \
+    cd .. && rm -rf llvm-project
 
 # Set environment variables
 ENV CC="/opt/musl/bin/x86_64-linux-musl-gcc"
@@ -170,19 +171,14 @@ ENV STRIP="/opt/musl/bin/x86_64-linux-musl-strip"
 ENV LD_LIBRARY_PATH="/opt/musl/x86_64-linux-musl/lib"
 
 # Set LLVM related paths
-ENV LLVM_CONFIG_PATH="/root/llvm-project/build/bin/llvm-config"
-ENV BINDGEN_EXTRA_CLANG_ARGS="-L/root/llvm-project/build/lib -lclang"
-ENV LIBCLANG_PATH="/root/llvm-project/build/lib"
+ENV LLVM_CONFIG_PATH="/opt/musl/llvm-build/bin/llvm-config"
+ENV BINDGEN_EXTRA_CLANG_ARGS="-L/opt/musl/llvm-build/lib -lclang"
+ENV LIBCLANG_PATH="/opt/musl/llvm-build/lib"
 
 # Set compilation dependency paths
 ENV PKG_CONFIG_PATH="/opt/musl/x86_64-linux-musl/lib/pkgconfig"
 ENV C_INCLUDE_PATH="/opt/musl/x86_64-linux-musl/include"
 ENV LIBRARY_PATH="/opt/musl/x86_64-linux-musl/lib"
-ENV LD_LIBRARY_PATH="/root/llvm-project/build/lib:/opt/musl/x86_64-linux-musl/lib"
-
-COPY build-snarkos.sh /root/
-RUN chmod +x /root/build-snarkos.sh && \
-    cd /root && \
-    ./build-snarkos.sh
+ENV LD_LIBRARY_PATH="/opt/musl/llvm-build/lib:/opt/musl/x86_64-linux-musl/lib"
 
 CMD ["/bin/bash"]
