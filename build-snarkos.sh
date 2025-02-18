@@ -35,15 +35,15 @@ export STRIP="/opt/musl/bin/x86_64-linux-musl-strip"
 export LD_LIBRARY_PATH="/opt/musl/x86_64-linux-musl/lib"
 
 # Set LLVM related paths
-export LLVM_CONFIG_PATH="/root/llvm-project/build/bin/llvm-config"
-export BINDGEN_EXTRA_CLANG_ARGS="-L/root/llvm-project/build/lib -lclang"
-export LIBCLANG_PATH="/root/llvm-project/build/lib"
+export LLVM_CONFIG_PATH="/opt/musl/llvm-build/bin/llvm-config"
+export BINDGEN_EXTRA_CLANG_ARGS="-L/opt/musl/llvm-build/lib -lclang"
+export LIBCLANG_PATH="/opt/musl/llvm-build/lib"
 
 # Set compilation dependency paths
 export PKG_CONFIG_PATH="/opt/musl/x86_64-linux-musl/lib/pkgconfig"
 export C_INCLUDE_PATH="/opt/musl/x86_64-linux-musl/include"
 export LIBRARY_PATH="/opt/musl/x86_64-linux-musl/lib"
-export LD_LIBRARY_PATH="/root/llvm-project/build/lib:/opt/musl/x86_64-linux-musl/lib"
+export LD_LIBRARY_PATH="/opt/musl/llvm-build/lib:/opt/musl/x86_64-linux-musl/lib"
 
 
 # Set Rust with musl target
